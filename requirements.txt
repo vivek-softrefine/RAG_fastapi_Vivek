@@ -16,3 +16,19 @@ python-multipart
 
 # pdf extraction
 pypdf
+
+# langchain - doc loaders, text-splitters
+langchain-text-splitters
+langchain-community
+
+# embedding model
+sentence-transformers
+
+# vectorDB
+chromadb
+
+# chat models from groq
+langchain-groq
+
+# optional
+fonttools

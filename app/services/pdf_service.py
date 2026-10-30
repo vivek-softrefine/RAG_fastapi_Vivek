@@ -1,40 +1,38 @@
 from pathlib import Path
 
-from pypdf import PdfReader
-from pypdf.errors import PdfReadError
+from langchain_community.document_loaders import PyPDFLoader
 
 
 class PDFService:
-    """Extract text and metadata from PDF documents."""
+    """Load PDF documents and extract page-level content."""
 
     @staticmethod
     def extract_document(file_path: Path) -> dict:
-        """Extract PDF text and basic metadata."""
+        """Extract PDF pages and basic metadata."""
 
         try:
-            reader = PdfReader(file_path)
+            loader = PyPDFLoader(str(file_path))
+            documents = loader.load()
 
-            if reader.is_encrypted:
-                raise ValueError("Encrypted PDF files are not supported.")
+        except Exception as exc:
+            raise ValueError("Unable to read or extract text from the PDF.") from exc
 
-            extracted_pages = []
-
-            for page in reader.pages:
-                page_text = page.extract_text() or ""
-
-                if page_text.strip():
-                    extracted_pages.append(page_text.strip())
-
-            extracted_text = "\n\n".join(extracted_pages)
-
-            if not extracted_text.strip():
-                raise ValueError("No extractable text found in the PDF.")
-
-            return {
-                "text": extracted_text,
-                "total_pages": len(reader.pages),
-                "total_characters": len(extracted_text),
+        pages = [
+            {
+                "page_number": document.metadata["page"] + 1,
+                "text": document.page_content.strip(),
             }
+            for document in documents
+            if document.page_content.strip()
+        ]
 
-        except PdfReadError as exc:
-            raise ValueError("Unable to read the PDF file.") from exc
+        total_characters = sum(len(page["text"]) for page in pages)
+
+        if not total_characters:
+            raise ValueError("No extractable text found in the PDF.")
+
+        return {
+            "pages": pages,
+            "total_pages": len(documents),
+            "total_characters": total_characters,
+        }

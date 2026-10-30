@@ -221,3 +221,7 @@ __marimo__/
 
 # uploads
 /uploads/
+
+# ChromaDB local storage directory
+chroma_data/
+*.chroma/

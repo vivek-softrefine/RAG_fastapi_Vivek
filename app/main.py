@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 
 from app.routes.document_routes import doc_router
+from app.routes.chat_routes import chat_router
 
 from app.utils.error_handlers import ErrorHandlers
 from app.utils.log_utils import LogUtils
@@ -29,3 +30,4 @@ async def health():
     }
 
 app.include_router(doc_router)
+app.include_router(chat_router)

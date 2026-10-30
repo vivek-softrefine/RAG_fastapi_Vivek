@@ -14,6 +14,7 @@ class DocumentResponse(BaseModel):
     uploaded_at: datetime
     total_pages: int = Field(ge=0)
     total_characters: int = Field(ge=0)
+    total_chunks: int = Field(ge=0)
 
 
 class DocumentUploadResponse(BaseModel):
