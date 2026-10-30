@@ -10,3 +10,9 @@ python-dotenv
 
 # MongoDB
 pymongo
+
+# file upload
+python-multipart
+
+# pdf extraction
+pypdf

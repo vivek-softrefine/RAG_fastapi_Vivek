@@ -5,8 +5,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.schemas.common_schema import ErrorResponse
+
 
 logger = logging.getLogger(__name__)
+
 
 class ErrorHandlers:
     """Handle application exceptions centrally."""
@@ -18,50 +21,52 @@ class ErrorHandlers:
             request.url.path, exc.status_code, exc.detail
         )
 
+        response = ErrorResponse(message=str(exc.detail))
         return JSONResponse(
             status_code=exc.status_code,
-            content={
-                "status": "error",
-                "message": exc.detail,
-            },
+            content=response.model_dump(mode="json"),
             headers=exc.headers,
         )
 
     @staticmethod
-    async def handle_validation_exception(request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def handle_validation_exception(request: Request, exc: RequestValidationError,) -> JSONResponse:
         logger.warning(
-            "Validation error | path=%s",
+            "Request validation failed | path=%s",
             request.url.path,
         )
 
+        details = [
+            {
+                "field": ".".join(str(part) for part in error["loc"]),
+                "message": error["msg"],
+            }
+            for error in exc.errors()
+        ]
+
+        response = ErrorResponse(message="Request validation failed.", details=details)
+
         return JSONResponse(
             status_code=422,
-            content={
-                "status": "error",
-                "message": "Request validation failed.",
-                "errors": exc.errors(),
-            },
+            content=response.model_dump(mode="json"),
         )
 
     @staticmethod
     async def handle_unexpected_exception(request: Request, exc: Exception) -> JSONResponse:
+
         logger.exception(
             "Unexpected error | path=%s",
             request.url.path,
         )
 
+        response = ErrorResponse(message="An unexpected error occurred.")
+
         return JSONResponse(
             status_code=500,
-            content={
-                "status": "error",
-                "message": "An unexpected error occurred.",
-            },
+            content=response.model_dump(mode="json"),
         )
 
     @staticmethod
     def register_handlers(app: FastAPI) -> None:
-        """Register exception handlers with FastAPI."""
-
         app.add_exception_handler(
             StarletteHTTPException,
             ErrorHandlers.handle_http_exception,
@@ -74,5 +79,5 @@ class ErrorHandlers:
 
         app.add_exception_handler(
             Exception,
-            ErrorHandlers.handle_unexpected_exception,
+            ErrorHandlers.handle_unexpected_exception
         )

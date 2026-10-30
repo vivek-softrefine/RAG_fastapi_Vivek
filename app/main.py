@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
+from app.routes.document_routes import doc_router
+
 from app.utils.error_handlers import ErrorHandlers
 from app.utils.log_utils import LogUtils
 
@@ -25,3 +27,5 @@ async def health():
         "status": "success",
         "message": "Application is running.",
     }
+
+app.include_router(doc_router)
