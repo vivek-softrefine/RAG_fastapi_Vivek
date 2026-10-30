@@ -1,0 +1,12 @@
+# fastapi
+fastapi[standard]
+
+# data validation
+pydantic
+pydantic-settings
+
+# env configuration
+python-dotenv
+
+# MongoDB
+pymongo
