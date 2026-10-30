@@ -1,4 +1,13 @@
 from fastapi import FastAPI
+from dotenv import load_dotenv
+
+from app.utils.error_handlers import ErrorHandlers
+from app.utils.log_utils import LogUtils
+
+load_dotenv()
+LogUtils.configure_logging()
+
+logger = LogUtils.get_logger(__name__)
 
 app = FastAPI(
     title="AI-Powered Personal Knowledge Assistant",
@@ -6,8 +15,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
-@app.get("/health", tags=["Health"])
-async def health_check():
+ErrorHandlers.register_handlers(app)
+
+@app.get("/health")
+async def health():
+    logger.info("Health check endpoint called. Server is Healthy.")
+
     return {
         "status": "success",
         "message": "Application is running.",
